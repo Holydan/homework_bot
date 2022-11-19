@@ -129,6 +129,7 @@ def main():
     if not check_tokens():
         logging.critical('Не найден обязательный токен')
         exit('Не найден обязательный токен')
+    global bot
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     logging.debug('Бот запущен')
     current_timestamp = int(time.time())
