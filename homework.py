@@ -61,7 +61,7 @@ def get_api_answer(current_timestamp):
     делает запрос к API-сервиса.
     на вход - временная метка. в случае успеха json->py
     """
-    timestamp = current_timestamp or int(time.time())
+    timestamp = current_timestamp
     params = {'from_date': timestamp}
     try:
         homework_status = requests.get(
