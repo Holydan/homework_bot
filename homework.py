@@ -28,9 +28,7 @@ STATUS_OK = 200
 
 
 class MyException(Exception):
-    """PEP8 выдает ошибку, требует пустую строку"""
-
-    pass
+    """PEP8 выдает ошибку, требует пустую строку."""
 
 
 def send_message(bot, message):
