@@ -9,16 +9,6 @@ import telegram
 from dotenv import load_dotenv
 
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    filename='telegram_bot.log',
-    format='%(asctime)s, %(levelname)s, %(message)s',
-)
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
-logger.addHandler(handler)
-
 load_dotenv()
 
 PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
@@ -29,7 +19,7 @@ RETRY_TIME = 600
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
 
-HOMEWORK_STATUSES = {
+HOMEWORK_VERDICT = {
     'approved': 'Работа проверена: ревьюеру всё понравилось. Ура!',
     'reviewing': 'Работа взята на проверку ревьюером.',
     'rejected': 'Работа проверена: у ревьюера есть замечания.'
@@ -39,7 +29,6 @@ STATUS_OK = 200
 
 class MyException(Exception):
     """Моя супер разработка."""
-
     pass
 
 
@@ -103,13 +92,17 @@ def parse_status(homework):
     на вход - один элемент из списка домашних заданий.
     в случае успеха возвращает строку для отправки в ТГ
     """
-    homework_name = homework['homework_name']
-    homework_status = homework['status']
-    if homework_status not in HOMEWORK_STATUSES:
+    if 'homework_name' and 'status' in homework:
+        homework_name = homework['homework_name']
+        homework_status = homework['status']
+    else:
+        logging.error('В ответе сервера отсутсвуют необходимые ключи')
+        send_message(bot, 'В ответе сервера отсутсвуют необходимые ключи')
+    if homework_status not in HOMEWORK_VERDICT:
         logging.error('Статус не обнаружен в списке')
         send_message(bot, 'Статус не обнаружен в списке')
         raise MyException('Статус не обнаружен в списке')
-    verdict = HOMEWORK_STATUSES[homework_status]
+    verdict = HOMEWORK_VERDICT[homework_status]
     mess = f'Изменился статус проверки работы "{homework_name}". {verdict}'
     return mess
 
@@ -142,12 +135,21 @@ def main():
             else:
                 send_message(bot, parse_status(homework[0]))
             current_timestamp = response.get('current_date', current_timestamp)
-            time.sleep(RETRY_TIME)
         except Exception as error:
             message = f'Сбой в работе программы: {error}'
             send_message(bot, message)
+        finally:
             time.sleep(RETRY_TIME)
 
 
 if __name__ == '__main__':
+    logging.basicConfig(
+        level=logging.DEBUG,
+        filename='telegram_bot.log',
+        format='%(asctime)s, %(levelname)s, %(message)s',
+    )
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    handler = logging.StreamHandler(sys.stdout)
+    logger.addHandler(handler)
     main()
