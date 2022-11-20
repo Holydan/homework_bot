@@ -28,7 +28,8 @@ STATUS_OK = 200
 
 
 class MyException(Exception):
-    """Моя супер разработка."""
+    """PEP8 выдает ошибку, требует пустую строку"""
+
     pass
 
 
